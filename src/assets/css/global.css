@@ -5,3 +5,31 @@ body,
     margin: 0;
     padding:0;
 }
+.el-breadcrumb{
+    margin-bottom: 15px;
+    font-size: 12px;
+}
+.el-card{
+    /* 提高CSS央视的优先级 */
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15)!important
+}
+/* 设置表格的边框 */
+.el-table{
+    margin-top: 15px;
+    font-size: 12px;
+}
+  /* 鼠标滑过高亮显示 */
+.el-table tbody tr:hover>td { background-color:rgb(189, 189, 189)!important } 
+
+  /* 表格线 */
+.el-table--border, .el-table--group { border-color: rgb(209, 206, 206); } 
+.el-table--border:after, .el-table--group:after, .el-table:before { background-color:rgb(209, 206, 206); }                     
+.el-table td, .el-table--border th,.el-table th.is-leaf { border-bottom-color: rgb(209, 206, 206);}                  
+.el-table--border td, .el-table--border th { border-right-color:rgb(209, 206, 206);}
+  /*  斑马纹表格背景 */
+/* .el-table--striped .el-table__body tr.el-table__row--striped td { background:rgb(228, 228, 228)} */
+
+/* 设置分页的边框 */
+.el-pagination{
+  margin-top: 12PX;
+}
