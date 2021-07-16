@@ -4,6 +4,7 @@ body,
     height: 100%;
     margin: 0;
     padding:0;
+    min-width: 1366px;
 }
 .el-breadcrumb{
     margin-bottom: 15px;
@@ -19,7 +20,7 @@ body,
     font-size: 12px;
 }
   /* 鼠标滑过高亮显示 */
-.el-table tbody tr:hover>td { background-color:rgb(189, 189, 189)!important } 
+.el-table tbody tr:hover>td { background-color:rgb(235,247,255)!important } 
 
   /* 表格线 */
 .el-table--border, .el-table--group { border-color: rgb(209, 206, 206); } 
@@ -32,4 +33,38 @@ body,
 /* 设置分页的边框 */
 .el-pagination{
   margin-top: 12PX;
+}
+/* 设置el-tag 的边距 */
+.elTagRights{
+  margin: 7px;
+}
+/* 设置级联选择器的宽度，这样下拉框就铺满对话框了 */
+.el-cascader{
+  width: 100%;
+}
+/* 设置级联选择器的高度，这样就显示在下拉框的下面 */
+.el-cascader-menu{
+  height: 300px;
+}
+/* 解决级联选择器中的小圆圈，单选按钮 */
+.el-cascader-menu .el-radio {
+  display: table;
+  vertical-align: middle;
+  width: 90%;
+  height: 100%;
+  position: absolute;
+  box-sizing: border-box;
+  margin-left:-20px;
+  padding-left:10px;
+}
+.el-cascader-menu .el-radio .el-radio__input {
+  visibility: hidden;
+}
+ /* 设置步骤条的字体大小 */
+.el-step__title {
+  font-size: 10px !important;
+}
+/* 设置商品内容的高度 */
+.ql-editor{
+  min-height: 300px;
 }

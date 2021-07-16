@@ -82,11 +82,13 @@
               @click="removeUserById(scope.row.id)"
             ></el-button>
             <!-- 这是分配角色按钮 -->
+            <!-- tooltip 是鼠标放上去时显示的文本 -->
             <el-tooltip effect="dark" content="分配角色" placement="top">
               <el-button
                 type="warning"
                 icon="el-icon-setting"
                 size="mini"
+                @click="showSetRoleDialog(scope.row)"
               ></el-button>
             </el-tooltip>
           </template>
@@ -196,6 +198,40 @@
         >
       </span>
     </el-dialog>
+    <!-- 分配角色对话框 -->
+    <el-dialog
+      title="分配角色"
+      :visible.sync="setRoleDialogVisible"
+      width="50%"
+      @close="setRoleClose"
+    >
+      <!-- 当前的用户和角色 -->
+      <div>
+        <p>当前的用户：{{ userinfoRole.username }}</p>
+        <p>当前的角色：{{ userinfoRole.role_name }}</p>
+        <p>
+          分配的角色：
+          <!-- 下拉列表， -->
+          <!-- 选择哪一项时， v-model 绑定的变量中就存放哪一个值
+             ，值为 绑定的 :value ，也就是角色ID-->
+          <el-select v-model="selectRole" placeholder="请选择">
+            <el-option
+              v-for="item in roles"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id"
+            >
+            </el-option>
+          </el-select>
+        </p>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="setRole"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -258,6 +294,14 @@ export default {
       editDialogVisible: false,
       // 存放的是根据ID查询出来的用户数据
       editUserData: {},
+      // 用来判断分配角色对话框是否显示
+      setRoleDialogVisible: false,
+      // 存放当前一行的用户信息
+      userinfoRole: {},
+      // 存放所有的角色信息
+      roles: [],
+      // 保存下拉框中选中的角色
+      selectRole:'',
     };
   },
   created() {
@@ -269,7 +313,8 @@ export default {
       const { data: res } = await this.$http.get("users", {
         params: this.userinfo,
       });
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+      if (res.meta.status !== 200)
+        return this.$message.error("系统错误，获取用户信息失败!");
       this.userList = res.data.users;
       this.total = res.data.total;
     },
@@ -353,27 +398,64 @@ export default {
     async removeUserById(id) {
       // 删除提示弹窗
       // 不加await 默认返回promise
-      const confirmResult=await this.$confirm("此操作将永久删除该用户, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-        // catch 用来捕获取消时的异常
-      }).catch(err => err);
+      const confirmResult = await this.$confirm(
+        "此操作将永久删除该用户, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+          // catch 用来捕获取消时的异常
+        }
+      ).catch((err) => err);
       // 如果用户确定删除，则返回值为字符串 confirm
       // 如果用户取消删除，则返回值为字符串，cancel
       // console.log(confirmResult)
       // 如果 confirmResult!=='confirm' ，则用户点击了取消按钮
-      if(confirmResult!=='confirm') return this.$message.info('您取消了删除');
+      if (confirmResult !== "confirm")
+        return this.$message.info("您取消了删除");
       // 如果上一步没有return，则执行下一步
       // 发送删除请求，参数为用户的ID
-      const {data:res}=await this.$http.delete('users/'+id);
+      const { data: res } = await this.$http.delete("users/" + id);
       // 如果删除失败，则弹出message框
-      if(res.meta.status!==200) return this.$message.error('系统异常,删除失败');
+      if (res.meta.status !== 200)
+        return this.$message.error("系统异常,删除失败");
       // 如果删除成功，需要执行获取用户数据的方法，让新的数据重新渲染
       this.getUserList();
       // 新数据渲染完成后，弹窗提示删除成功
-      this.$message.success(res.meta.msg)
+      this.$message.success(res.meta.msg);
     },
+    // 显示分配角色对话框
+    async showSetRoleDialog(userinfo) {
+      // 需要将该行数据存放至data中
+      this.userinfoRole = userinfo;
+      // 在展示对话框之前，获取所有角色
+      const { data: res } = await this.$http.get("roles");
+      if (res.meta.status !== 200)
+        return this.$message.error("系统错误，获取角色信息失败");
+      // 保存所有的角色信息
+      this.roles = res.data;
+      // 显示对话框
+      this.setRoleDialogVisible = true;
+    },
+    // 角色授权
+    async setRole(){
+      // 判断角色下拉框是否为空，如果为空则提示信息
+      if(!this.selectRole)  return this.$message.error('请选择角色');
+      // 发送角色授权请求，参数为用户ID，和角色ID
+      const {data:res}=await this.$http.put('users/'+this.userinfoRole.id+'/role',{rid:this.selectRole});
+      if(res.meta.status!==200) return this.$message.error('系统错误，角色授权失败！');
+      // 重新渲染页面，拿到最新的数据
+      this.getUserList();
+      this.$message.success(res.meta.msg);
+      // 点击确认，对话框关闭
+      this.setRoleDialogVisible=false;
+    },
+    // 监听分配角色对话框的关闭
+    setRoleClose(){
+      // 对话框关闭时，下拉框重置为初始状态
+      this.selectRole='';
+    }
   },
 };
 </script>
